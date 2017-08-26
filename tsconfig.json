@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "target": "es2015",
+        "module": "amd",
+        "sourceMap": true,
+        "allowSyntheticDefaultImports": true,
+        "outFile": "./dist/kattobi.js"
+    },
+    "exclude": [
+        "node_modules",
+        "bower_components",
+        "jspm_packages",
+        "tmp",
+        "temp",
+        "lib"
+    ]
+}
