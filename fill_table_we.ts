@@ -126,7 +126,6 @@ namespace Kattobi {
   
     ctx.font = "16px Helvetica Neue";
     ctx.fillStyle = "white";
-    console.log(result.name, type, WE_TYPE[type]);
     ctx.fillText(WE_TYPE[type], x + 2, y + 2);
   }
 
