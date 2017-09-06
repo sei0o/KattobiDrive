@@ -62,62 +62,9 @@ namespace Kattobi {
       usedRow += Math.ceil(tracks.length / 10); // 10曲ごとに下の行へ改行
     }
   }
-
-  export function setupCanvas() {
-    let canvas = document.createElement("canvas");
-    let ctx = canvas.getContext("2d");
-    canvas.width = 700;
-    canvas.height = 1400;
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    return canvas;
-  }
-
-  export function putMark(ctx, x, y, result) {
-    let color = COLORS[result.rank];
-
-    if (result.scoreMax >= 1005000 && result.scoreMax < 1007500) { // SS+
-      color = COLOR_SSPLUS;
-    }
-
-    if (result.scoreMax == 1010000) { // AJC
-      color = COLOR_AJC;
-    }
-
-    ctx.fillStyle = color;
-    ctx.fillRect(x + 15, y + 15, 30, 30);
-
-    if (result.fullChain !== 0) {
-      ctx.fillStyle = COLOR_FULLCHAIN;
-    } else {
-      ctx.fillStyle = "white";
-    }
-
-    if (result.isFC) {
-      ctx.beginPath();
-      ctx.arc(x + 30, y + 30, 10, Math.PI/2, Math.PI * 1.5, false); // 半円
-      ctx.fill();
-    }
-
-    if (result.isAJ) {
-      ctx.beginPath();
-      ctx.arc(x + 30, y + 30, 10, 0, Math.PI * 2, false);
-      ctx.fill();
-    }
-  }
-
-  export function displayPNG(canv) {
-    $("#main_menu > canvas").remove();
-    let elm = $("<img>")
-      .attr("src", canv.toDataURL())
-      .css("margin-top", "10px")
-      .css("width", "100%");
-    $("#main_menu").append("<br>").append(elm);
-  }
   
   function drawArtworkWE(ctx, artwork, x, y, result, type) {
-    drawArtwork(ctx, artwork, x, y, result, false);
+    drawArtwork(ctx, artwork, x, y, result, false)
   
     ctx.globalAlpha = result.scoreMax === undefined ? 0.5 : 1.0;
   
@@ -129,26 +76,6 @@ namespace Kattobi {
     ctx.fillText(WE_TYPE[type], x + 2, y + 2);
   }
 
-  export function drawArtwork(ctx, artwork, x, y, result, isExp) {
-    ctx.globalAlpha = 1.0;
-    if (result.scoreMax === undefined) ctx.globalAlpha = 0.5; // 未プレイ曲は半透明
-    ctx.drawImage(artwork, x, y, 60, 60);
-    ctx.globalAlpha = 1.0;
-  
-    // マークする
-    if (result.scoreMax !== undefined) { // その楽曲のレコードが見つかれば
-      putMark(ctx, x, y, result);
-    }
-  
-    // 赤譜面なら印をつける
-    if (isExp) {
-      if (result.scoreMax === undefined) ctx.globalAlpha = 0.5; // 未プレイ曲は半透明
-      ctx.fillStyle = COLOR_EXPERT;
-      ctx.fillRect(x, y + 50, 60, 10);
-      ctx.globalAlpha = 1.0;
-    }
-  }
-  
   function drawInfoWE(ctx) {
     ctx.fillStyle = "#1A1A1A";
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);

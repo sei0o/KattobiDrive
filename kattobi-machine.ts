@@ -61,7 +61,6 @@ namespace KattobiMachine {
           name: $(elm).find(".music_title").html(),
           musicId: parseInt($(elm).find(".music_title").attr("onclick").substr(54, 4)),
           level: level,
-          constant: 0
         }
         if ($(elm).find(".text_b").html()) {
             rec.scoreMax = parseInt($(elm).find(".text_b").html().split(",").join(""))
