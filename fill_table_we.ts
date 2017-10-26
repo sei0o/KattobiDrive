@@ -25,7 +25,7 @@ namespace Kattobi {
   
     $("#main_menu").append(canvas);
 
-    KattobiMachine.getWEMusics(data => {
+    Machine.getWEMusics(data => {
       drawTableWE(canvas, ctx, data)
     })
   }

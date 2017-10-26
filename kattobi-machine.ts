@@ -1,4 +1,4 @@
-namespace KattobiMachine {
+namespace Kattobi.Machine {
   export function getWEMusics(callback) {
     $.get("/mobile/WorldsEndMusic.html", (data) => {
       let recordElms = $(data).find(".w388.musiclist_box.bg_worldsend");
@@ -41,11 +41,11 @@ namespace KattobiMachine {
       setTimeout(() => {
         getMusicsLevel(lv, musics => {
           loaded.push(lv)
-          console.log(`Fetched Music Data: ${lv} (${loaded})`)
+          console.log(`Fetched Music Data: ${lv} * ${musics.length} (${loaded})`)
           records[lv-11] = musics
           if (loaded.length === 4) callback(records.reduce((a, b) => { return a.concat(b) }))
         })
-      }, 500 * (lv-10))
+      }, 2000 * (lv-10))
     }
   }
 
@@ -64,7 +64,7 @@ namespace KattobiMachine {
         }
         if ($(elm).find(".text_b").html()) {
             rec.scoreMax = parseInt($(elm).find(".text_b").html().split(",").join(""))
-            rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 1))
+            rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 2))
             rec.isAJ = !!$(elm).find("img[src*='alljustice']").length
             rec.isFC = !!$(elm).find("img[src*='fullcombo']").length
             rec.fullChain = !!$(elm).find("img[src*='fullchain']").length

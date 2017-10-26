@@ -29,8 +29,18 @@ namespace Kattobi {
     Promise.resolve()
     .then(() => {
       return new Promise((resolve, reject) => {
-        KattobiMachine.getMusicsLevel(12, data => {
+        Machine.getMusicsLevel(11, data => {
           let [canvas, ctx] = addCanv()
+          drawTable(canvas, ctx, 11, onlyMas, data)
+          resolve(data)
+        })
+      })
+    })
+    .then(data11 => {
+      return new Promise((resolve, reject) => {
+        Machine.getMusicsLevel(12, data => {
+          let [canvas, ctx] = addCanv()
+          console.log(data)
           drawTable(canvas, ctx, 12, onlyMas, data)
           resolve(data)
         })
@@ -38,14 +48,14 @@ namespace Kattobi {
     })
     .then(data12 => {
       return new Promise((resolve, reject) => {
-        KattobiMachine.getMusicsLevel(13, data => {
+        Machine.getMusicsLevel(13, data => {
           resolve(data)
         })
       })
     })
     .then((data13: any[]) => {
       return new Promise((resolve, reject) => {
-        KattobiMachine.getMusicsLevel(14, data => {
+        Machine.getMusicsLevel(14, data => {
           let [canvas, ctx] = addCanv()
           drawTable(canvas, ctx, 13, onlyMas, data13.concat(data))
         })
@@ -115,7 +125,7 @@ namespace Kattobi {
   }
 
   export function putMark(ctx, x, y, result) {
-    let color = COLORS[result.rank];
+    let color = COLORS[result.rank]
 
     if (result.scoreMax >= 1005000 && result.scoreMax < 1007500) { // SS+
       color = COLOR_SSPLUS;
@@ -128,7 +138,7 @@ namespace Kattobi {
     ctx.fillStyle = color;
     ctx.fillRect(x + 15, y + 15, 30, 30);
 
-    if (result.fullChain !== 0) {
+    if (result.fullChain) {
       ctx.fillStyle = COLOR_FULLCHAIN;
     } else {
       ctx.fillStyle = "white";
@@ -184,7 +194,7 @@ namespace Kattobi {
   
     ctx.font = "15px Helvetica Neue";
     ctx.fillStyle = "#555";
-    ctx.fillText("定数データ: Chuniviewer, 生成: MilkDrive", 410, 20);
+    ctx.fillText("生成: KattobiDrive (@kattobidrive)", 430, 20);
   
     ctx.font = "18px Helvetica Neue";
     ctx.fillStyle = COLORS[8];
