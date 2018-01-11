@@ -12,7 +12,7 @@ namespace Kattobi.Machine {
         }
         if ($(elm).find(".text_b").html()) {
             rec.scoreMax = parseInt($(elm).find(".text_b").html().split(",").join(""))
-            rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 1))
+            rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 2))
             rec.isAJ = !!$(elm).find("img[src*='alljustice']").length
             rec.isFC = !!$(elm).find("img[src*='fullcombo']").length
             rec.fullChain = !!$(elm).find("img[src*='fullchain']").length

@@ -1,5 +1,5 @@
 namespace Kattobi.Batch {
-  export const WE_MUSIC_COUNT = 41
+  export const WE_MUSIC_COUNT = 55
 
   export function generateMusicData() {
     Machine.getConstants(constants => {
