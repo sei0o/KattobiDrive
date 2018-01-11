@@ -1,47 +1,52 @@
 namespace Kattobi.Batch {
   export const WE_MUSIC_COUNT = 41
-  // Lv11-14以外はまともに更新していない
-  export const MUSIC_COUNT = [-1, 8, 77, 234, 76, 161, 127, 60, 122, 163, 93, 156, 182, 77, 5]
 
   export function generateMusicData() {
-    Machine.getHigherLvMusics(musics => {
-      let datalist = []
-      console.log(musics)
-      musics.forEach((m, i) => {
-        setTimeout(() => {
-          console.log(`Fetching: ${i}`)
-          let existedData = MUSIC_DATA.find(t => { return t.musicId == m.musicId && t.level == m.level })
-          let dat = {
-            name: m.name,
-            musicId: m.musicId,
-            level: m.level,
-            constant: existedData !== undefined ? existedData.constant : 0.0,
-            isExpert: existedData !== undefined ? existedData.isExpert : false,
-            artworkURL: ""
-          }
-          if (existedData !== undefined) {
-            dat.artworkURL = existedData.artworkURL
-            datalist.push(dat)
-            if (i == MUSIC_COUNT[11] + MUSIC_COUNT[12] + MUSIC_COUNT[13] + MUSIC_COUNT[14] - 1) {
-              console.log(JSON.stringify(datalist))
-            }
-          } else {
-            Machine.getArtwork(m.musicId, url => {
-              datalist.push({
-                artworkURL: url,
-                name: m.name,
-                musicId: m.musicId,
-                level: m.level,
-                constant: existedData !== undefined ? existedData.constant : 0.0,
-                isExpert: existedData !== undefined ? existedData.isExpert : false,
-              })
+    Machine.getConstants(constants => {
+      Machine.getHigherLvMusics(musics => {
+        let musicCount = musics.length
+        console.log(`Length: ${musicCount}`)
 
-              if (i == MUSIC_COUNT[11] + MUSIC_COUNT[12] + MUSIC_COUNT[13] + MUSIC_COUNT[14] - 1) {
-                console.log(JSON.stringify(datalist))
+        let datalist = []
+        console.log(musics)
+        musics.forEach((m, i) => {
+          setTimeout(() => {
+            console.log(`Fetching: ${i}`)
+            let constantTrack = constants.find(t => { return t.musicId == m.musicId && Math.floor(t.level) == m.level })
+            let constant = constantTrack ? constantTrack.constant : 0.0
+            let existedData = MUSIC_DATA.find(t => { return t.musicId == m.musicId && Math.floor(t.level) == m.level })
+            let dat = {
+              name: m.name,
+              musicId: m.musicId,
+              level: m.level,
+              constant: constant,
+              isExpert: existedData !== undefined ? existedData.isExpert : false,
+              artworkURL: ""
+            }
+            if (existedData !== undefined) {
+              dat.artworkURL = existedData.artworkURL
+              datalist.push(dat)
+              if (i == musicCount - 1) {
+                showData(JSON.stringify(datalist))
               }
-            })
-          }
-        }, 500 * i)
+            } else {
+              Machine.getArtwork(m.musicId, url => {
+                datalist.push({
+                  artworkURL: url,
+                  name: m.name,
+                  musicId: m.musicId,
+                  level: m.level,
+                  constant: constant,
+                  isExpert: existedData !== undefined ? existedData.isExpert : false,
+                })
+
+                if (i == musicCount - 1) {
+                  showData(JSON.stringify(datalist))
+                }
+              })
+            }
+          }, 500 * i)
+        })
       })
     })
   }
@@ -68,6 +73,13 @@ namespace Kattobi.Batch {
         }, 500 * i)
       })
     })
+  }
+
+  function showData(string) {
+    let wi = window.open()
+    wi.document.open()
+    wi.document.write(`<pre>${string}</pre>`)
+    wi.document.close()   
   }
 
 }

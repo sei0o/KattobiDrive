@@ -85,4 +85,22 @@ namespace Kattobi.Machine {
       callback(url)
     })
   }
+
+  export function getConstants(callback) {
+    $.post("https://chuniviewer.net/api/GetMusicConstantValues.php", {}, (data) => {
+      let parsed = []
+    
+      for (let music of JSON.parse(data)) {
+        if (music.value == null) music.value = `0.0`
+        if (music.music_name === "VERTeX") console.log(music)
+        parsed.push({
+          musicId: music.music_id,
+          constant: music.value,
+          level: music.level,
+        })
+      }
+
+      callback(parsed)
+    })
+  }
 }

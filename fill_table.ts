@@ -70,7 +70,7 @@ namespace Kattobi {
     let loadedImage = 0;
     const topMargin = 110;
     let allTracksCount = MUSIC_DATA.filter(function(t) {
-      if (onlyMas && t.isExpert === true) return false;
+      if (onlyMas && t.isExpert) return false;
       if (t.constant == 0.0) return false;
       if (diff == 13) {
         return t.level == 13 || t.level == 13.5 || t.level == 14;
@@ -82,7 +82,7 @@ namespace Kattobi {
       ctx.fillStyle = "#555"
       ctx.fillText((diff + i * 0.1).toString(10), 10, topMargin + usedRow * 60) // 上にmargin 50, artworkは60x60px
   
-      let tracks = MUSIC_DATA.filter(t => { return t.constant === diff + i * 0.1 && (!onlyMas || t.isExpert === undefined) });
+      let tracks = MUSIC_DATA.filter(t => { return t.constant === diff + i * 0.1 && (!onlyMas || !t.isExpert) });
       for (let k in tracks) {
         let track = tracks[parseInt(k)]
         let artwork = new Image()
@@ -94,6 +94,9 @@ namespace Kattobi {
 
         artwork.onload = function() {
           let result = results.find(a => a.level === track.level && a.musicId == track.musicId)
+          if (result === undefined) {
+            console.log(track)
+          }
           drawArtwork(ctx, artwork, imgX, imgY, result, track.isExpert)
   
           loadedImage++;
@@ -108,7 +111,7 @@ namespace Kattobi {
           artwork.src = `/mobile/${track.artworkURL}`
         }, parseInt(k) * 50)
       }
-  
+
       usedRow += Math.ceil(tracks.length / 10) // 10曲ごとに下の行へ改行
     }
   }
