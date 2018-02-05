@@ -64,27 +64,37 @@ namespace Kattobi {
   }
   
   function drawTable(canvas, ctx, diff, onlyMas, results) {
-    drawInfo(ctx);
-  
     let usedRow = 0; // 画像を入れた横の行の数
-    let loadedImage = 0;
-    const topMargin = 110;
-    let allTracksCount = MUSIC_DATA.filter(function(t) {
-      if (onlyMas && t.isExpert) return false;
-      if (t.constant == 0.0) return false;
+    let loadedImage = 0
+    const topMargin = 110
+    let allTracksCount = MUSIC_DATA.filter(t => {
+      if (onlyMas && t.isExpert) return false
+      if (t.constant == 0.0) return false
       if (diff == 13) {
-        return t.level == 13 || t.level == 13.5 || t.level == 14;
+        return t.level == 13 || t.level == 13.5 || t.level == 14
       }
-      return t.level == diff || t.level == diff + 0.5;
-    }).length;
-  
+      return t.level == diff || t.level == diff + 0.5
+    }).length
+
+    let tracksFiltered = []
+    let linesToUse = 0
+    for (let i = (diff == 13 ? 11 : 9); i >= 0; i--) {
+      let tracks = MUSIC_DATA.filter(t => { return t.constant === diff + i * 0.1 && (!onlyMas || !t.isExpert) })
+      tracksFiltered[i] = tracks
+      linesToUse += Math.ceil(tracks.length / 10)
+    }
+    canvas.height = 150 + linesToUse * 60
+    ctx.fillStyle = "white"
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    drawInfo(ctx)
+
     for (let i = (diff == 13 ? 11 : 9); i >= 0; i--) {
       ctx.fillStyle = "#555"
       ctx.fillText((diff + i * 0.1).toString(10), 10, topMargin + usedRow * 60) // 上にmargin 50, artworkは60x60px
   
-      let tracks = MUSIC_DATA.filter(t => { return t.constant === diff + i * 0.1 && (!onlyMas || !t.isExpert) });
-      for (let k in tracks) {
-        let track = tracks[parseInt(k)]
+      //let tracks = MUSIC_DATA.filter(t => { return t.constant === diff + i * 0.1 && (!onlyMas || !t.isExpert) })
+      for (let k in tracksFiltered[i]) {
+        let track = tracksFiltered[i][parseInt(k)]
         let artwork = new Image()
   
         // 60 * (i % 10): artworkを表示、60 + はマージン
@@ -112,7 +122,7 @@ namespace Kattobi {
         }, parseInt(k) * 50)
       }
 
-      usedRow += Math.ceil(tracks.length / 10) // 10曲ごとに下の行へ改行
+      usedRow += Math.ceil(tracksFiltered[i].length / 10) // 10曲ごとに下の行へ改行
     }
   }
 
