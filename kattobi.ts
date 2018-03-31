@@ -14,9 +14,11 @@ namespace Kattobi {
     $("<button>")
       .html("フィルテーブルを生成")
       .on("click",() => {
-        Kattobi.generateFillTable(false)
+        Kattobi.generateFillTable($("#onlymas").prop("checked"))
       })
       .appendTo("#main_menu")
+    $("#main_menu")
+      .append("<label><input type='checkbox' id='onlymas'>MASTERのみ</label><br>")
     $("<button>")
       .html("WEフィルテーブルを生成")
       .on("click", Kattobi.generateWEFillTable)

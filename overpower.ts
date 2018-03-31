@@ -8,15 +8,15 @@ namespace Kattobi.OverPower {
 
   export function showLevelOP(lv: number, isPlus: boolean, callback) {
     calcLevelOP(lv, isPlus, (op: number, max: number) => {
-      let trunOp = op.toFixed(2)
-      let trunMax = max.toFixed(2)
-      let trunPercentage = (op / max * 100).toFixed(2)
+      let trunOp = Math.floor(op * 100.0) / 100.0
+      let trunMax = Math.floor(max * 100.0) / 100.0
+      let trunPercentage = Math.floor(op / max * 10000) / 100.0
 
       let opElm = $("<div>")
         .css("color", "white")
         .css("padding", "5px")
         .css("backgroundColor", "#f4048b")
-        .html(`Lv${lv}${isPlus ? "+" : ""} OP: <strong>${trunOp}/${trunMax} ${trunPercentage}%</strong>`)
+        .html(`Lv${lv}${isPlus ? "+" : ""} OP: <strong>${trunOp.toFixed(2)}/${trunMax.toFixed(2)} ${trunPercentage}%</strong>`)
       $("#main_menu").append(opElm)
 
       callback()
@@ -59,7 +59,7 @@ namespace Kattobi.OverPower {
       case 10: // SSS
         op += 2
         op += 0.75 * (record.scoreMax - 1007500) / 2500
-        break;
+        break
       case 9: 
         if (record.scoreMax >= 1005000) { // SS+
           op += 1.5
@@ -68,16 +68,16 @@ namespace Kattobi.OverPower {
           op += 1
           op += 0.5 * (record.scoreMax - 1000000) / 5000
         }
-        break;
+        break
       case 8:
       case 7:
       case 6:
       case 5: // S ~ A
         op += 1 * (record.scoreMax - 975000) / 25000
-        break;
+        break
       default:
         op = 0
-        break;
+        break
     }
 
     console.log(op * 5, constant, record.name)
