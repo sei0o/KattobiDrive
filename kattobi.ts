@@ -24,7 +24,7 @@ namespace Kattobi {
       .on("click", Kattobi.generateWEFillTable)
       .appendTo("#main_menu")
     $("<button>")
-      .html("OPを計算(Lv13~14) [試験運用]")
+      .html("OPを計算(Lv13~14)")
       .on("click", () => {
         Kattobi.OverPower.showHigherLevelsOP()
       })
