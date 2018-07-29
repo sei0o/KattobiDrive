@@ -117,6 +117,7 @@ namespace Kattobi {
           }
         }
         
+        if (track.artworkURL === undefined) { console.log("Artwork Not Found: ", track) }
         setTimeout(() => {
           artwork.src = `/mobile/${track.artworkURL}`
         }, parseInt(k) * 50)
