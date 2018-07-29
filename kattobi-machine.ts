@@ -87,7 +87,7 @@ namespace Kattobi.Machine {
   }
 
   export function getConstants(callback) {
-    $.post("https://chuniviewer.net/api/GetMusicConstantValues.php", {}, (data) => {
+    $.post("https://chuniviewer.net/GetMusicConstantValues.php", {}, (data) => {
       let parsed = []
     
       for (let music of JSON.parse(data)) {
