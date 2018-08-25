@@ -19,48 +19,27 @@ namespace Kattobi {
   const COLOR_FULLCHAIN = "#ff9c52"
 
   export function generateFillTable(onlyMas) { // 難易度ごとに分けて生成
-    let addCanv = ():[HTMLCanvasElement, CanvasRenderingContext2D] => {
-      let canvas = setupCanvas()
-      let ctx = canvas.getContext("2d")
-      $("#main_menu").append(canvas)
-      return [canvas, ctx]
-    }
-
+    // NETの仕様上asyncに全レベルを取得できない
+    let data13 = []
     Promise.resolve()
-    .then(() => {
-      return new Promise((resolve, reject) => {
-        Machine.getMusicsLevel(11, data => {
-          let [canvas, ctx] = addCanv()
-          drawTable(canvas, ctx, 11, onlyMas, data)
-          resolve(data)
-        })
+      .then(() => { return Machine.getMusicsLevel(11) })
+      .then(data => { addCanvasAndDrawTable(11, onlyMas, data) })
+      .then(() => { return Machine.getMusicsLevel(12) })
+      .then(data => { addCanvasAndDrawTable(12, onlyMas, data) })
+      .then(() => { return Machine.getMusicsLevel(13) })
+      .then(data => {
+        data13 = data
+        return Machine.getMusicsLevel(14)
       })
-    })
-    .then(data11 => {
-      return new Promise((resolve, reject) => {
-        Machine.getMusicsLevel(12, data => {
-          let [canvas, ctx] = addCanv()
-          console.log(data)
-          drawTable(canvas, ctx, 12, onlyMas, data)
-          resolve(data)
-        })
-      })
-    })
-    .then(data12 => {
-      return new Promise((resolve, reject) => {
-        Machine.getMusicsLevel(13, data => {
-          resolve(data)
-        })
-      })
-    })
-    .then((data13: any[]) => {
-      return new Promise((resolve, reject) => {
-        Machine.getMusicsLevel(14, data => {
-          let [canvas, ctx] = addCanv()
-          drawTable(canvas, ctx, 13, onlyMas, data13.concat(data))
-        })
-      })
-    })
+      .then(data => { addCanvasAndDrawTable(13, onlyMas, data.concat(data13)) })
+   }
+
+  function addCanvasAndDrawTable(diff, onlyMas, data) {
+    let canvas = setupCanvas()
+    let ctx = canvas.getContext("2d")
+    $("#main_menu").append(canvas)
+
+    drawTable(canvas, ctx, diff, onlyMas, data)
   }
   
   function drawTable(canvas, ctx, diff, onlyMas, results) {
