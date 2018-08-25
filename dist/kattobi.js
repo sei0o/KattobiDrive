@@ -286,133 +286,61 @@ var Kattobi;
 })(Kattobi || (Kattobi = {}));
 var Kattobi;
 (function (Kattobi) {
-    var FriendsVs;
-    (function (FriendsVs) {
-        function setup() {
-            // restoreFavorite(setupFriends)
-        }
-        FriendsVs.setup = setup;
-        // 一時的にUnFavoriteになっているフレンドを戻す
-        function restoreFavorite(callback) {
-            if (localStorage.getItem("tempFavoriteFriend")) {
-                replaceFavorite(localStorage.getItem("tempUnFavoriteFriend"), localStorage.getItem("tempFavoriteFriend"), () => {
-                    localStorage.removeItem("tempFavoriteFriend");
-                    localStorage.removeItem("tempUnFavoriteFriend");
-                    if (callback)
-                        callback();
-                });
-            }
-            else {
-                if (callback)
-                    callback();
-            }
-        }
-        FriendsVs.restoreFavorite = restoreFavorite;
-        function setupFriends() {
-            Kattobi.Machine.getFriends(friends => {
-                $("select[name='friend']")
-                    .empty()
-                    .on("change", () => {
-                    let code = $("select[name='friend']").val();
-                    restoreFavorite(() => {
-                        // 一時的に選択されたものをお気に入りにする
-                        replaceFavorite(code, friends[0].code, () => {
-                            localStorage.setItem("tempFavoriteFriend", code);
-                            localStorage.setItem("tempUnFavoriteFriend", friends[0].code);
-                            setupFriends();
-                        });
-                    });
-                });
-                friends.forEach(f => {
-                    let el = $("<option>")
-                        .attr("class", "narrow01 w280 mt_20 option")
-                        .val(f.code)
-                        .html(f.favorite ? `[Fav] ${f.name}` : f.name)
-                        .appendTo("select[name='friend']");
-                });
-            });
-        }
-        function replaceFavorite(codeToAdd, codeToRemove, callback) {
-            Kattobi.Machine.removeFavoriteFriend(codeToRemove, () => {
-                Kattobi.Machine.addFavoriteFriend(codeToAdd, callback);
-            });
-        }
-        FriendsVs.replaceFavorite = replaceFavorite;
-    })(FriendsVs = Kattobi.FriendsVs || (Kattobi.FriendsVs = {}));
-})(Kattobi || (Kattobi = {}));
-var Kattobi;
-(function (Kattobi) {
     var Batch;
     (function (Batch) {
-        Batch.WE_MUSIC_COUNT = 55;
         function generateMusicData() {
             Promise.all([Kattobi.Machine.getConstants(), Kattobi.Machine.getHigherLvMusics()])
                 .then(([constants, musics]) => {
-                let musicCount = musics.length;
-                console.log(`Length: ${musicCount}`);
-                let datalist = [];
-                console.log(musics);
-                musics.forEach((m, i) => {
-                    setTimeout(() => {
-                        console.log(`Fetching: ${i}`);
-                        let constantTrack = constants.find(t => { return t.musicId == m.musicId && Math.floor(t.level) == m.level; });
-                        let constant = constantTrack ? constantTrack.constant : 0.0;
-                        let existedData = Kattobi.MUSIC_DATA.find(t => { return t.musicId == m.musicId && Math.floor(t.level) == m.level; });
-                        let dat = {
+                return Promise.all(musics.map((m, i) => {
+                    let constantTrack = constants.find(t => { return t.musicId == m.musicId && Math.floor(t.level) == m.level; });
+                    let constant = constantTrack ? constantTrack.constant : 0.0;
+                    let existedData = Kattobi.MUSIC_DATA.find(t => { return t.musicId == m.musicId && Math.floor(t.level) == m.level; });
+                    return new Promise((resolve, reject) => {
+                        setTimeout(resolve, 500 * i); // 間隔を開ければジャケは正しくとれるようになるが…
+                    })
+                        .then(() => {
+                        if (existedData === undefined)
+                            return Kattobi.Machine.getArtwork(m.musicId);
+                    })
+                        .then(url => {
+                        console.log(`Got: ${i}`);
+                        return {
                             name: m.name,
                             musicId: m.musicId,
                             level: m.level,
                             constant: constant,
                             isExpert: existedData !== undefined ? existedData.isExpert : false,
-                            artworkURL: ""
+                            artworkURL: url || existedData.artworkURL
                         };
-                        if (existedData !== undefined) {
-                            dat.artworkURL = existedData.artworkURL;
-                            datalist.push(dat);
-                            if (i == musicCount - 1) {
-                                showData(JSON.stringify(datalist));
-                            }
-                        }
-                        else {
-                            Kattobi.Machine.getArtwork(m.musicId).then(url => {
-                                datalist.push({
-                                    artworkURL: url,
-                                    name: m.name,
-                                    musicId: m.musicId,
-                                    level: m.level,
-                                    constant: constant,
-                                    isExpert: existedData !== undefined ? existedData.isExpert : false,
-                                });
-                                if (i == musicCount - 1) {
-                                    showData(JSON.stringify(datalist));
-                                }
-                            });
-                        }
-                    }, 500 * i);
-                });
+                    });
+                }));
+            })
+                .then(datalist => {
+                showData(JSON.stringify(datalist));
             });
         }
         Batch.generateMusicData = generateMusicData;
         function generateWEData() {
             Kattobi.Machine.getWEMusics().then(musics => {
-                let datalist = [];
-                musics.forEach((m, i) => {
-                    setTimeout(() => {
-                        console.log(`Fetching: ${i}`);
-                        Kattobi.Machine.getArtwork(m.musicId).then(url => {
-                            datalist.push({
-                                artworkURL: url,
-                                name: m.name,
-                                musicId: m.musicId,
-                                starDifficulty: m.starDifficulty,
-                                type: m.type
-                            });
-                            if (i >= Batch.WE_MUSIC_COUNT - 1) {
-                                console.log(JSON.stringify(datalist));
-                            }
-                        });
-                    }, 500 * i);
-                });
+                return Promise.all(musics.map((m, i) => {
+                    return new Promise((resolve, reject) => {
+                        setTimeout(resolve, 500 * i);
+                    })
+                        .then(() => { return Kattobi.Machine.getArtwork(m.musicId); })
+                        .then(url => {
+                        console.log(`Got: ${i}`);
+                        return {
+                            artworkURL: url,
+                            name: m.name,
+                            musicId: m.musicId,
+                            starDifficulty: m.starDifficulty,
+                            type: m.type
+                        };
+                    });
+                }));
+            })
+                .then(datalist => {
+                showData(JSON.stringify(datalist));
             });
         }
         Batch.generateWEData = generateWEData;
