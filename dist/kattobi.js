@@ -368,7 +368,7 @@ var Kattobi;
     (function (Batch) {
         Batch.WE_MUSIC_COUNT = 55;
         function generateMusicData() {
-            Kattobi.Machine.getConstants(constants => {
+            Kattobi.Machine.getConstants().then(constants => {
                 Kattobi.Machine.getHigherLvMusics(musics => {
                     let musicCount = musics.length;
                     console.log(`Length: ${musicCount}`);
@@ -396,7 +396,7 @@ var Kattobi;
                                 }
                             }
                             else {
-                                Kattobi.Machine.getArtwork(m.musicId, url => {
+                                Kattobi.Machine.getArtwork(m.musicId).then(url => {
                                     datalist.push({
                                         artworkURL: url,
                                         name: m.name,
@@ -417,12 +417,12 @@ var Kattobi;
         }
         Batch.generateMusicData = generateMusicData;
         function generateWEData() {
-            Kattobi.Machine.getWEMusics(musics => {
+            Kattobi.Machine.getWEMusics().then(musics => {
                 let datalist = [];
                 musics.forEach((m, i) => {
                     setTimeout(() => {
                         console.log(`Fetching: ${i}`);
-                        Kattobi.Machine.getArtwork(m.musicId, url => {
+                        Kattobi.Machine.getArtwork(m.musicId).then(url => {
                             datalist.push({
                                 artworkURL: url,
                                 name: m.name,
@@ -451,27 +451,29 @@ var Kattobi;
 (function (Kattobi) {
     var Machine;
     (function (Machine) {
-        function getWEMusics(callback) {
-            $.get("/mobile/WorldsEndMusic.html", (data) => {
-                let recordElms = $(data).find(".w388.musiclist_box.bg_worldsend");
-                let records = [];
-                recordElms.each((idx, elm) => {
-                    let rec = {
-                        name: $(elm).find(".musiclist_worldsend_title").html(),
-                        musicId: parseInt($(elm).find(".musiclist_worldsend_title").attr("onclick").substr(54, 4)),
-                        starDifficulty: parseInt($(elm).find(".musiclist_worldsend_star > img").attr("src").substr(26, 1), 10),
-                        type: parseInt($(elm).find(".musiclist_worldsend_icon > img").attr("src").substr(22, 2))
-                    };
-                    if ($(elm).find(".text_b").html()) {
-                        rec.scoreMax = parseInt($(elm).find(".text_b").html().split(",").join(""));
-                        rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 2));
-                        rec.isAJ = !!$(elm).find("img[src*='alljustice']").length;
-                        rec.isFC = !!$(elm).find("img[src*='fullcombo']").length;
-                        rec.fullChain = !!$(elm).find("img[src*='fullchain']").length;
-                    }
-                    records.push(rec);
+        function getWEMusics() {
+            return new Promise((resolve, reject) => {
+                $.get("/mobile/WorldsEndMusic.html", (data) => {
+                    let recordElms = $(data).find(".w388.musiclist_box.bg_worldsend");
+                    let records = [];
+                    recordElms.each((idx, elm) => {
+                        let rec = {
+                            name: $(elm).find(".musiclist_worldsend_title").html(),
+                            musicId: parseInt($(elm).find(".musiclist_worldsend_title").attr("onclick").substr(54, 4)),
+                            starDifficulty: parseInt($(elm).find(".musiclist_worldsend_star > img").attr("src").substr(26, 1), 10),
+                            type: parseInt($(elm).find(".musiclist_worldsend_icon > img").attr("src").substr(22, 2))
+                        };
+                        if ($(elm).find(".text_b").html()) {
+                            rec.scoreMax = parseInt($(elm).find(".text_b").html().split(",").join(""));
+                            rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 2));
+                            rec.isAJ = !!$(elm).find("img[src*='alljustice']").length;
+                            rec.isFC = !!$(elm).find("img[src*='fullcombo']").length;
+                            rec.fullChain = !!$(elm).find("img[src*='fullchain']").length;
+                        }
+                        records.push(rec);
+                    });
+                    resolve(records);
                 });
-                callback(records);
             });
         }
         Machine.getWEMusics = getWEMusics;
@@ -527,31 +529,35 @@ var Kattobi;
             });
         }
         Machine.getMusicsLevel = getMusicsLevel;
-        function getArtwork(musicId, callback) {
-            $.post("/mobile/MusicLevel.html", {
-                musicId: musicId,
-                music_detail: "music_detail"
-            }, data => {
-                let url = $(data).find(".play_jacket_img img").first().attr("src");
-                callback(url);
+        function getArtwork(musicId) {
+            return new Promise((resolve, reject) => {
+                $.post("/mobile/MusicLevel.html", {
+                    musicId: musicId,
+                    music_detail: "music_detail"
+                }, data => {
+                    let url = $(data).find(".play_jacket_img img").first().attr("src");
+                    resolve(url);
+                });
             });
         }
         Machine.getArtwork = getArtwork;
-        function getConstants(callback) {
-            $.post("https://chuniviewer.net/GetMusicConstantValues.php", {}, (data) => {
-                let parsed = [];
-                for (let music of JSON.parse(data)) {
-                    if (music.value == null)
-                        music.value = `0.0`;
-                    if (music.music_name === "VERTeX")
-                        console.log(music);
-                    parsed.push({
-                        musicId: music.music_id,
-                        constant: music.value,
-                        level: music.level,
-                    });
-                }
-                callback(parsed);
+        function getConstants() {
+            return new Promise((resolve, reject) => {
+                $.post("https://chuniviewer.net/GetMusicConstantValues.php", {}, (data) => {
+                    let parsed = [];
+                    for (let music of JSON.parse(data)) {
+                        if (music.value == null)
+                            music.value = `0.0`;
+                        if (music.music_name === "VERTeX")
+                            console.log(music);
+                        parsed.push({
+                            musicId: music.music_id,
+                            constant: music.value,
+                            level: music.level,
+                        });
+                    }
+                    resolve(parsed);
+                });
             });
         }
         Machine.getConstants = getConstants;

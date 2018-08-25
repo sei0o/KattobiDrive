@@ -1,26 +1,28 @@
 namespace Kattobi.Machine {
-  export function getWEMusics(callback) {
-    $.get("/mobile/WorldsEndMusic.html", (data) => {
-      let recordElms = $(data).find(".w388.musiclist_box.bg_worldsend");
-      let records = []
-      recordElms.each((idx, elm) => {
-        let rec: any = {
-          name: $(elm).find(".musiclist_worldsend_title").html(),
-          musicId: parseInt($(elm).find(".musiclist_worldsend_title").attr("onclick").substr(54, 4)),
-          starDifficulty: parseInt($(elm).find(".musiclist_worldsend_star > img").attr("src").substr(26, 1), 10),
-          type: parseInt($(elm).find(".musiclist_worldsend_icon > img").attr("src").substr(22, 2))
-        }
-        if ($(elm).find(".text_b").html()) {
-            rec.scoreMax = parseInt($(elm).find(".text_b").html().split(",").join(""))
-            rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 2))
-            rec.isAJ = !!$(elm).find("img[src*='alljustice']").length
-            rec.isFC = !!$(elm).find("img[src*='fullcombo']").length
-            rec.fullChain = !!$(elm).find("img[src*='fullchain']").length
-        }
-        records.push(rec)
+  export function getWEMusics(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      $.get("/mobile/WorldsEndMusic.html", (data) => {
+        let recordElms = $(data).find(".w388.musiclist_box.bg_worldsend")
+        let records = []
+        recordElms.each((idx, elm) => {
+          let rec: any = {
+            name: $(elm).find(".musiclist_worldsend_title").html(),
+            musicId: parseInt($(elm).find(".musiclist_worldsend_title").attr("onclick").substr(54, 4)),
+            starDifficulty: parseInt($(elm).find(".musiclist_worldsend_star > img").attr("src").substr(26, 1), 10),
+            type: parseInt($(elm).find(".musiclist_worldsend_icon > img").attr("src").substr(22, 2))
+          }
+          if ($(elm).find(".text_b").html()) {
+              rec.scoreMax = parseInt($(elm).find(".text_b").html().split(",").join(""))
+              rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 2))
+              rec.isAJ = !!$(elm).find("img[src*='alljustice']").length
+              rec.isFC = !!$(elm).find("img[src*='fullcombo']").length
+              rec.fullChain = !!$(elm).find("img[src*='fullchain']").length
+          }
+          records.push(rec)
+        })
+        
+        resolve(records)
       })
-      
-      callback(records)
     })
   }
 
@@ -76,31 +78,35 @@ namespace Kattobi.Machine {
     })
   }
 
-  export function getArtwork(musicId, callback) {
-    $.post("/mobile/MusicLevel.html", {
-      musicId: musicId,
-      music_detail: "music_detail"
-    }, data => {
-      let url = $(data).find(".play_jacket_img img").first().attr("src")
-      callback(url)
+  export function getArtwork(musicId): Promise<any> {
+    return new Promise((resolve, reject) => {
+      $.post("/mobile/MusicLevel.html", {
+        musicId: musicId,
+        music_detail: "music_detail"
+      }, data => {
+        let url = $(data).find(".play_jacket_img img").first().attr("src")
+        resolve(url)
+      })
     })
   }
 
-  export function getConstants(callback) {
-    $.post("https://chuniviewer.net/GetMusicConstantValues.php", {}, (data) => {
-      let parsed = []
-    
-      for (let music of JSON.parse(data)) {
-        if (music.value == null) music.value = `0.0`
-        if (music.music_name === "VERTeX") console.log(music)
-        parsed.push({
-          musicId: music.music_id,
-          constant: music.value,
-          level: music.level,
-        })
-      }
+  export function getConstants(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      $.post("https://chuniviewer.net/GetMusicConstantValues.php", {}, (data) => {
+        let parsed = []
+      
+        for (let music of JSON.parse(data)) {
+          if (music.value == null) music.value = `0.0`
+          if (music.music_name === "VERTeX") console.log(music)
+          parsed.push({
+            musicId: music.music_id,
+            constant: music.value,
+            level: music.level,
+          })
+        }
 
-      callback(parsed)
+        resolve(parsed)
+      })
     })
   }
 }

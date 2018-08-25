@@ -2,7 +2,7 @@ namespace Kattobi.Batch {
   export const WE_MUSIC_COUNT = 55
 
   export function generateMusicData() {
-    Machine.getConstants(constants => {
+    Machine.getConstants().then(constants => {
       Machine.getHigherLvMusics(musics => {
         let musicCount = musics.length
         console.log(`Length: ${musicCount}`)
@@ -30,7 +30,7 @@ namespace Kattobi.Batch {
                 showData(JSON.stringify(datalist))
               }
             } else {
-              Machine.getArtwork(m.musicId, url => {
+              Machine.getArtwork(m.musicId).then(url => {
                 datalist.push({
                   artworkURL: url,
                   name: m.name,
@@ -52,12 +52,12 @@ namespace Kattobi.Batch {
   }
 
   export function generateWEData() {
-    Machine.getWEMusics(musics => {
+    Machine.getWEMusics().then(musics => {
       let datalist = []
       musics.forEach((m, i) => {
         setTimeout(() => {
           console.log(`Fetching: ${i}`)
-          Machine.getArtwork(m.musicId, url => {
+          Machine.getArtwork(m.musicId).then(url => {
             datalist.push({
               artworkURL: url,
               name: m.name,
