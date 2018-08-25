@@ -2,8 +2,8 @@ namespace Kattobi.Batch {
   export const WE_MUSIC_COUNT = 55
 
   export function generateMusicData() {
-    Machine.getConstants().then(constants => {
-      Machine.getHigherLvMusics(musics => {
+    Promise.all([Machine.getConstants(), Machine.getHigherLvMusics()])
+      .then(([constants, musics]) => {
         let musicCount = musics.length
         console.log(`Length: ${musicCount}`)
 
@@ -45,8 +45,7 @@ namespace Kattobi.Batch {
                 }
               })
             }
-          }, 500 * i)
-        })
+        }, 500 * i)
       })
     })
   }

@@ -368,50 +368,49 @@ var Kattobi;
     (function (Batch) {
         Batch.WE_MUSIC_COUNT = 55;
         function generateMusicData() {
-            Kattobi.Machine.getConstants().then(constants => {
-                Kattobi.Machine.getHigherLvMusics(musics => {
-                    let musicCount = musics.length;
-                    console.log(`Length: ${musicCount}`);
-                    let datalist = [];
-                    console.log(musics);
-                    musics.forEach((m, i) => {
-                        setTimeout(() => {
-                            console.log(`Fetching: ${i}`);
-                            let constantTrack = constants.find(t => { return t.musicId == m.musicId && Math.floor(t.level) == m.level; });
-                            let constant = constantTrack ? constantTrack.constant : 0.0;
-                            let existedData = Kattobi.MUSIC_DATA.find(t => { return t.musicId == m.musicId && Math.floor(t.level) == m.level; });
-                            let dat = {
-                                name: m.name,
-                                musicId: m.musicId,
-                                level: m.level,
-                                constant: constant,
-                                isExpert: existedData !== undefined ? existedData.isExpert : false,
-                                artworkURL: ""
-                            };
-                            if (existedData !== undefined) {
-                                dat.artworkURL = existedData.artworkURL;
-                                datalist.push(dat);
+            Promise.all([Kattobi.Machine.getConstants(), Kattobi.Machine.getHigherLvMusics()])
+                .then(([constants, musics]) => {
+                let musicCount = musics.length;
+                console.log(`Length: ${musicCount}`);
+                let datalist = [];
+                console.log(musics);
+                musics.forEach((m, i) => {
+                    setTimeout(() => {
+                        console.log(`Fetching: ${i}`);
+                        let constantTrack = constants.find(t => { return t.musicId == m.musicId && Math.floor(t.level) == m.level; });
+                        let constant = constantTrack ? constantTrack.constant : 0.0;
+                        let existedData = Kattobi.MUSIC_DATA.find(t => { return t.musicId == m.musicId && Math.floor(t.level) == m.level; });
+                        let dat = {
+                            name: m.name,
+                            musicId: m.musicId,
+                            level: m.level,
+                            constant: constant,
+                            isExpert: existedData !== undefined ? existedData.isExpert : false,
+                            artworkURL: ""
+                        };
+                        if (existedData !== undefined) {
+                            dat.artworkURL = existedData.artworkURL;
+                            datalist.push(dat);
+                            if (i == musicCount - 1) {
+                                showData(JSON.stringify(datalist));
+                            }
+                        }
+                        else {
+                            Kattobi.Machine.getArtwork(m.musicId).then(url => {
+                                datalist.push({
+                                    artworkURL: url,
+                                    name: m.name,
+                                    musicId: m.musicId,
+                                    level: m.level,
+                                    constant: constant,
+                                    isExpert: existedData !== undefined ? existedData.isExpert : false,
+                                });
                                 if (i == musicCount - 1) {
                                     showData(JSON.stringify(datalist));
                                 }
-                            }
-                            else {
-                                Kattobi.Machine.getArtwork(m.musicId).then(url => {
-                                    datalist.push({
-                                        artworkURL: url,
-                                        name: m.name,
-                                        musicId: m.musicId,
-                                        level: m.level,
-                                        constant: constant,
-                                        isExpert: existedData !== undefined ? existedData.isExpert : false,
-                                    });
-                                    if (i == musicCount - 1) {
-                                        showData(JSON.stringify(datalist));
-                                    }
-                                });
-                            }
-                        }, 500 * i);
-                    });
+                            });
+                        }
+                    }, 500 * i);
                 });
             });
         }
@@ -477,55 +476,61 @@ var Kattobi;
             });
         }
         Machine.getWEMusics = getWEMusics;
-        function getWEArtwork(musicId, callback) {
-            $.post("/mobile/WorldsEndMusic.html", {
-                musicId: musicId,
-                music_detail: "music_detail"
-            }, data => {
-                let url = $(data).find(".play_jacket_img img").first().attr("src");
-                callback(url);
+        function getWEArtwork(musicId) {
+            return new Promise((resolve, reject) => {
+                $.post("/mobile/WorldsEndMusic.html", {
+                    musicId: musicId,
+                    music_detail: "music_detail"
+                }, data => {
+                    let url = $(data).find(".play_jacket_img img").first().attr("src");
+                    resolve(url);
+                });
             });
         }
         Machine.getWEArtwork = getWEArtwork;
-        function getHigherLvMusics(callback) {
-            let records = [];
-            let loaded = [];
-            for (let lv of [11, 12, 13, 14]) {
-                setTimeout(() => {
-                    getMusicsLevel(lv, musics => {
-                        loaded.push(lv);
-                        console.log(`Fetched Music Data: ${lv} * ${musics.length} (${loaded})`);
-                        records[lv - 11] = musics;
-                        if (loaded.length === 4)
-                            callback(records.reduce((a, b) => { return a.concat(b); }));
-                    });
-                }, 2000 * (lv - 10));
-            }
+        function getHigherLvMusics() {
+            return new Promise((resolve, reject) => {
+                let records = [];
+                let loaded = [];
+                for (let lv of [11, 12, 13, 14]) {
+                    setTimeout(() => {
+                        getMusicsLevel(lv).then(musics => {
+                            loaded.push(lv);
+                            console.log(`Fetched Music Data: ${lv} * ${musics.length} (${loaded})`);
+                            records[lv - 11] = musics;
+                            if (loaded.length === 4)
+                                resolve(records.reduce((a, b) => { return a.concat(b); }));
+                        });
+                    }, 2000 * (lv - 10));
+                }
+            });
         }
         Machine.getHigherLvMusics = getHigherLvMusics;
-        function getMusicsLevel(level, callback) {
-            $.post("/mobile/MusicLevel.html", {
-                selected: level,
-                changeSelect: "changeSelect"
-            }, data => {
-                let recordElms = $(data).find(".w388.musiclist_box");
-                let records = [];
-                recordElms.each((idx, elm) => {
-                    let rec = {
-                        name: $(elm).find(".music_title").html(),
-                        musicId: parseInt($(elm).find(".music_title").attr("onclick").substr(54, 4)),
-                        level: level,
-                    };
-                    if ($(elm).find(".text_b").html()) {
-                        rec.scoreMax = parseInt($(elm).find(".text_b").html().split(",").join(""));
-                        rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 2));
-                        rec.isAJ = !!$(elm).find("img[src*='alljustice']").length;
-                        rec.isFC = !!$(elm).find("img[src*='fullcombo']").length;
-                        rec.fullChain = !!$(elm).find("img[src*='fullchain']").length;
-                    }
-                    records.push(rec);
+        function getMusicsLevel(level) {
+            return new Promise((resolve, reject) => {
+                $.post("/mobile/MusicLevel.html", {
+                    selected: level,
+                    changeSelect: "changeSelect"
+                }, data => {
+                    let recordElms = $(data).find(".w388.musiclist_box");
+                    let records = [];
+                    recordElms.each((idx, elm) => {
+                        let rec = {
+                            name: $(elm).find(".music_title").html(),
+                            musicId: parseInt($(elm).find(".music_title").attr("onclick").substr(54, 4)),
+                            level: level,
+                        };
+                        if ($(elm).find(".text_b").html()) {
+                            rec.scoreMax = parseInt($(elm).find(".text_b").html().split(",").join(""));
+                            rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 2));
+                            rec.isAJ = !!$(elm).find("img[src*='alljustice']").length;
+                            rec.isFC = !!$(elm).find("img[src*='fullcombo']").length;
+                            rec.fullChain = !!$(elm).find("img[src*='fullchain']").length;
+                        }
+                        records.push(rec);
+                    });
+                    resolve(records);
                 });
-                callback(records);
             });
         }
         Machine.getMusicsLevel = getMusicsLevel;

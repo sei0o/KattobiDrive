@@ -26,55 +26,61 @@ namespace Kattobi.Machine {
     })
   }
 
-  export function getWEArtwork(musicId, callback){
-    $.post("/mobile/WorldsEndMusic.html", {
-      musicId: musicId,
-      music_detail: "music_detail"
-    }, data => {
-      let url = $(data).find(".play_jacket_img img").first().attr("src")
-      callback(url)
+  export function getWEArtwork(musicId): Promise<any> {
+    return new Promise((resolve, reject) => {
+      $.post("/mobile/WorldsEndMusic.html", {
+        musicId: musicId,
+        music_detail: "music_detail"
+      }, data => {
+        let url = $(data).find(".play_jacket_img img").first().attr("src")
+        resolve(url)
+      })
     })
   }
 
-  export function getHigherLvMusics(callback) {
-    let records = []
-    let loaded = []
-    for(let lv of [11, 12, 13, 14]) {
-      setTimeout(() => {
-        getMusicsLevel(lv, musics => {
-          loaded.push(lv)
-          console.log(`Fetched Music Data: ${lv} * ${musics.length} (${loaded})`)
-          records[lv-11] = musics
-          if (loaded.length === 4) callback(records.reduce((a, b) => { return a.concat(b) }))
-        })
-      }, 2000 * (lv-10))
-    }
+  export function getHigherLvMusics(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let records = []
+      let loaded = []
+      for(let lv of [11, 12, 13, 14]) {
+        setTimeout(() => {
+          getMusicsLevel(lv).then(musics => {
+            loaded.push(lv)
+            console.log(`Fetched Music Data: ${lv} * ${musics.length} (${loaded})`)
+            records[lv-11] = musics
+            if (loaded.length === 4) resolve(records.reduce((a, b) => { return a.concat(b) }))
+          })
+        }, 2000 * (lv-10))
+      }
+    })
   }
 
-  export function getMusicsLevel(level, callback) {
-    $.post("/mobile/MusicLevel.html", {
+  export function getMusicsLevel(level): Promise<any> {
+    return new Promise((resolve, reject) => {
+      $.post("/mobile/MusicLevel.html", {
         selected: level,
         changeSelect: "changeSelect"
-      }, data => {
-      let recordElms = $(data).find(".w388.musiclist_box");
-      let records = []
-      recordElms.each((idx, elm) => {
-        let rec: any = {
-          name: $(elm).find(".music_title").html(),
-          musicId: parseInt($(elm).find(".music_title").attr("onclick").substr(54, 4)),
-          level: level,
-        }
-        if ($(elm).find(".text_b").html()) {
-            rec.scoreMax = parseInt($(elm).find(".text_b").html().split(",").join(""))
-            rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 2))
-            rec.isAJ = !!$(elm).find("img[src*='alljustice']").length
-            rec.isFC = !!$(elm).find("img[src*='fullcombo']").length
-            rec.fullChain = !!$(elm).find("img[src*='fullchain']").length
-        }
-        records.push(rec)
-      })
+        }, data => {
+        let recordElms = $(data).find(".w388.musiclist_box");
+        let records = []
+        recordElms.each((idx, elm) => {
+          let rec: any = {
+            name: $(elm).find(".music_title").html(),
+            musicId: parseInt($(elm).find(".music_title").attr("onclick").substr(54, 4)),
+            level: level,
+          }
+          if ($(elm).find(".text_b").html()) {
+              rec.scoreMax = parseInt($(elm).find(".text_b").html().split(",").join(""))
+              rec.rank = parseInt($(elm).find(".play_musicdata_icon img[src*='rank']").attr("src").substr(24, 2))
+              rec.isAJ = !!$(elm).find("img[src*='alljustice']").length
+              rec.isFC = !!$(elm).find("img[src*='fullcombo']").length
+              rec.fullChain = !!$(elm).find("img[src*='fullchain']").length
+          }
+          records.push(rec)
+        })
       
-      callback(records)
+        resolve(records)
+      })
     })
   }
 
